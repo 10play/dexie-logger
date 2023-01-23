@@ -1,4 +1,4 @@
-import { DBCore, DBCoreTable, Middleware } from 'dexie';
+import { DBCore, DBCoreTable, Middleware } from "dexie";
 export type Operation = keyof DBCoreTable;
 export interface LoggerProps {
     tableWhiteList?: string[];
@@ -6,5 +6,4 @@ export interface LoggerProps {
     operationsWhiteList?: Operation[];
     operationsBlackList?: Operation[];
 }
-declare const loggerMiddleware: (props: LoggerProps) => Middleware<DBCore>;
-export default loggerMiddleware;
+export declare const dexieLogger: (props: LoggerProps) => Middleware<DBCore>;
