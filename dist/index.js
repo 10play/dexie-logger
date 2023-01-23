@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const loggerMiddleware = (loggerProps) => {
     const { tableWhiteList, tablesBlackList, operationsBlackList, operationsWhiteList } = loggerProps;
@@ -27,13 +36,9 @@ const loggerMiddleware = (loggerProps) => {
         stack: 'dbcore',
         name: 'logger',
         create(downlevelDatabase) {
-            return {
-                ...downlevelDatabase,
-                table(tableName) {
+            return Object.assign(Object.assign({}, downlevelDatabase), { table(tableName) {
                     const downlevelTable = downlevelDatabase.table(tableName);
-                    return {
-                        ...downlevelTable,
-                        mutate: async (req) => {
+                    return Object.assign(Object.assign({}, downlevelTable), { mutate: (req) => __awaiter(this, void 0, void 0, function* () {
                             if (shouldLog(tableName, 'mutate')) {
                                 console.groupCollapsed(`Dexie | ${tableName} [ Mutate ] => Request`);
                                 console.log(req.type);
@@ -48,8 +53,7 @@ const loggerMiddleware = (loggerProps) => {
                                 }
                                 return res;
                             });
-                        },
-                        get: async (req) => {
+                        }), get: (req) => __awaiter(this, void 0, void 0, function* () {
                             if (shouldLog(tableName, 'get')) {
                                 console.groupCollapsed(`Dexie | ${tableName} [ Get ] => Request`);
                                 console.log(req.key);
@@ -65,8 +69,7 @@ const loggerMiddleware = (loggerProps) => {
                                 // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                                 return res;
                             });
-                        },
-                        getMany: async (req) => {
+                        }), getMany: (req) => __awaiter(this, void 0, void 0, function* () {
                             if (shouldLog(tableName, 'getMany')) {
                                 console.groupCollapsed(`Dexie | ${tableName} [ Get Many ] => Request`);
                                 console.log(req.keys);
@@ -82,8 +85,7 @@ const loggerMiddleware = (loggerProps) => {
                                 // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                                 return res;
                             });
-                        },
-                        query: async (req) => {
+                        }), query: (req) => __awaiter(this, void 0, void 0, function* () {
                             if (shouldLog(tableName, 'query')) {
                                 console.groupCollapsed(`Dexie | ${tableName}  [ Query ] => Request`);
                                 console.log(req.query);
@@ -98,8 +100,7 @@ const loggerMiddleware = (loggerProps) => {
                                 }
                                 return res;
                             });
-                        },
-                        openCursor: async (req) => {
+                        }), openCursor: (req) => __awaiter(this, void 0, void 0, function* () {
                             if (shouldLog(tableName, 'openCursor')) {
                                 console.groupCollapsed(`Dexie | ${tableName} [ Open Cursor ] => Request`);
                                 console.log(`Dexie | Open Cursor | ${JSON.stringify(req.query, undefined, 2)}, ${tableName} - `);
@@ -113,8 +114,7 @@ const loggerMiddleware = (loggerProps) => {
                                 }
                                 return res;
                             });
-                        },
-                        count: async (req) => {
+                        }), count: (req) => __awaiter(this, void 0, void 0, function* () {
                             if (shouldLog(tableName, 'count')) {
                                 console.groupCollapsed(`Dexie | ${tableName} [ Count ] => Request`);
                                 console.log(req.query);
@@ -129,10 +129,8 @@ const loggerMiddleware = (loggerProps) => {
                                 }
                                 return res;
                             });
-                        }
-                    };
-                }
-            };
+                        }) });
+                } });
         }
     };
 };
