@@ -19,7 +19,9 @@ export interface LoggerProps {
   operationsBlackList?: Operation[];
 }
 
-const dexieLogger: (props: LoggerProps) => Middleware<DBCore> = (
+const DEFAULT_PROPS: LoggerProps = {};
+
+const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
   loggerProps
 ) => {
   const {
@@ -27,7 +29,7 @@ const dexieLogger: (props: LoggerProps) => Middleware<DBCore> = (
     tablesBlackList,
     operationsBlackList,
     operationsWhiteList,
-  } = loggerProps;
+  } = loggerProps || DEFAULT_PROPS;
   if (tableWhiteList && tablesBlackList)
     throw Error(
       "You can't use both tableWhiteList and tablesBlackList at the same time"
