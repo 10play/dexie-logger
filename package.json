@@ -5,5 +5,8 @@
   "main": "index.js",
   "repository": "https://github.com/10play/dexie-logger.git",
   "author": "Noam Golani <noam.golani@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "dexie": "^3.2.3"
+  }
 }
