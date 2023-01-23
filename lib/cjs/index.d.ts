@@ -6,5 +6,5 @@ export interface LoggerProps {
     operationsWhiteList?: Operation[];
     operationsBlackList?: Operation[];
 }
-declare const dexieLogger: (props: LoggerProps) => Middleware<DBCore>;
+declare const dexieLogger: (props?: LoggerProps) => Middleware<DBCore>;
 export default dexieLogger;
