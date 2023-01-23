@@ -19,7 +19,7 @@ export interface LoggerProps {
   operationsBlackList?: Operation[];
 }
 
-export const dexieLogger: (props: LoggerProps) => Middleware<DBCore> = (
+const dexieLogger: (props: LoggerProps) => Middleware<DBCore> = (
   loggerProps
 ) => {
   const {
@@ -200,3 +200,5 @@ export const dexieLogger: (props: LoggerProps) => Middleware<DBCore> = (
     },
   };
 };
+
+export default dexieLogger;
