@@ -6,8 +6,6 @@ import { babel } from "@rollup/plugin-babel";
 import * as path from "path";
 import pkg from "./package.json";
 
-console.log("pkg", pkg);
-
 const moduleName = pkg.name.replace(/^@.*\//, "");
 const inputFileName = "src/index.ts";
 const author = pkg.author;

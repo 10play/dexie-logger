@@ -3,10 +3,11 @@
   "version": "1.1.8",
   "description": "Dexie logger middleware",
   "browser": "lib/index.js",
-  "typings": "lib/index.d.ts",
+  "main": "lib/cjs/index.js",
+  "module": "lib/es/index.js",
+  "typings": "lib/index",
   "scripts": {
-    "build": "rollup -c --bundleConfigAsCjs --extend",
-    "prepare": "npm run build"
+    "build": "rollup -c --bundleConfigAsCjs --extend"
   },
   "repository": "https://github.com/10play/dexie-logger.git",
   "author": "Noam Golani <noam.golani@gmail.com>",
@@ -17,17 +18,15 @@
     "rollup": "^3.10.1",
     "rollup-plugin-terser": "^7.0.2",
     "tslib": "^2.4.1",
-    "typescript": "^4.9.4"
+    "typescript": "^4.9.4",
+    "@rollup/plugin-babel": "^6.0.3",
+    "@rollup/plugin-commonjs": "^24.0.1",
+    "@rollup/plugin-node-resolve": "^15.0.1",
+    "@rollup/plugin-typescript": "^11.0.0"
   },
   "keywords": [
     "Dexie",
     "Logger",
     "Middleware"
-  ],
-  "dependencies": {
-    "@rollup/plugin-babel": "^6.0.3",
-    "@rollup/plugin-commonjs": "^24.0.1",
-    "@rollup/plugin-node-resolve": "^15.0.1",
-    "@rollup/plugin-typescript": "^11.0.0"
-  }
+  ]
 }
