@@ -4,9 +4,6 @@
   "description": "Dexie logger middleware",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
-  "files": [
-    "dist/**/*"
-  ],
   "exports": {
     "import": "./dist/index.js"
   },

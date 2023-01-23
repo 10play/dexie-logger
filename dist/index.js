@@ -132,3 +132,4 @@ export const dexieLogger = (loggerProps) => {
         },
     };
 };
+//# sourceMappingURL=index.js.map
