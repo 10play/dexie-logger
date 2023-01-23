@@ -7,6 +7,9 @@
   "files": [
     "dist/"
   ],
+  "exports": {
+    "import": "./dist/index.js"
+  },
   "scripts": {
     "build": "tsc",
     "prepare": "npm run build"
