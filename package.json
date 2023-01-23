@@ -1,0 +1,9 @@
+{
+  "name": "dexie-logger",
+  "version": "1.0.0",
+  "description": "Dexie logger middleware",
+  "main": "index.js",
+  "repository": "https://github.com/10play/dexie-logger.git",
+  "author": "Noam Golani <noam.golani@gmail.com>",
+  "license": "MIT"
+}
