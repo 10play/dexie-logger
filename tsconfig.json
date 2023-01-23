@@ -1,0 +1,11 @@
+{
+  "version": "1.6.2",
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2021",
+    "declaration": true,
+    "outDir": "dist/",
+    "strict": true
+  },
+  "files": ["./src/index.ts"]
+}
