@@ -1,6 +1,6 @@
 {
   "name": "dexie-logger",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Dexie logger middleware",
   "browser": "lib/index.js",
   "main": "lib/cjs/index.js",
