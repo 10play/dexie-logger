@@ -6,6 +6,8 @@
 
 ## About the project
 
+This project created while working with dexie, from the need to better debugging tool
+
 ## Getting Started
 
 ### Installation
