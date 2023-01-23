@@ -76,9 +76,9 @@ Don't forget to give the project a star! Thanks again!
 
 Distributed under the MIT License. See `LICENSE.txt` for more information.
 
-[stars-shield]: https://img.shields.io/github/stars/othneildrew/Best-README-Template.svg?style=for-the-badge
+[stars-shield]: https://img.shields.io/github/stars/10play/dexie-logger.svg?style=for-the-badge
 [stars-url]: https://github.com/10play/dexie-logger/stargazers
-[issues-shield]: https://img.shields.io/github/issues/othneildrew/Best-README-Template.svg?style=for-the-badge
+[issues-shield]: https://img.shields.io/github/issues/10play/dexie-logger.svg?style=for-the-badge
 [issues-url]: https://github.com/10play/dexie-logger/issues
-[license-shield]: https://img.shields.io/github/license/othneildrew/Best-README-Template.svg?style=for-the-badge
+[license-shield]: https://img.shields.io/github/license/10play/dexie-logger.svg?style=for-the-badge
 [license-url]: https://github.com/10play/dexie-logger/blob/master/LICENSE.txt
