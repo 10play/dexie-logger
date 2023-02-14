@@ -3,8 +3,10 @@ import {
   DBCoreCountRequest,
   DBCoreGetManyRequest,
   DBCoreGetRequest,
+  DBCoreKeyRange,
   DBCoreMutateRequest,
   DBCoreOpenCursorRequest,
+  DBCoreQuery,
   DBCoreQueryRequest,
   DBCoreTable,
   Middleware,
@@ -12,12 +14,86 @@ import {
 
 export type Operation = keyof DBCoreTable;
 
+const RANGE_TYPES = [, 'equal', 'range', 'any', 'never'];
+
+const generateRangeKey = (range: DBCoreKeyRange) => {
+  switch (RANGE_TYPES[range.type]) {
+    case 'equal':
+      return `equal`;
+    case 'range':
+      return `${range.lowerOpen ? '(' : '['}${JSON.stringify(range.lower)}:${JSON.stringify(range.upper)}${
+        range.upperOpen ? ')' : ']'
+      }`;
+    case 'any':
+      return `any`;
+    case 'never':
+    default:
+      return 'never';
+  }
+};
+
+const generateQueryRequestKey = (query: DBCoreQuery) => {
+  return `query:[${query.index ? query.index.name || 'primary' : 'primary'},range:${generateRangeKey(query.range)}]`;
+};
+
+const generateMutateKey = (tableName: string, req: DBCoreMutateRequest) => {
+  let typeSpecificKey = '';
+  switch (req.type) {
+    case 'add':
+      typeSpecificKey = '';
+      break;
+    case 'put':
+      if (req.changeSpec) typeSpecificKey = `fields:${Object.keys(req.changeSpec).join(',')}`;
+      else if (req.changeSpecs)
+        typeSpecificKey = `fields:${req.changeSpecs.map((changeSpec) => Object.keys(changeSpec).join(',')).join(',')}`;
+      else if (req.criteria) typeSpecificKey = JSON.stringify(req.criteria);
+      else if (req.keys) typeSpecificKey = 'byKeys';
+      break;
+    case 'delete':
+      typeSpecificKey = req.criteria ? JSON.stringify(req.criteria) : 'byKeys';
+      break;
+    case 'deleteRange':
+      typeSpecificKey = req.range ? generateRangeKey(req.range) : 'all';
+      break;
+  }
+  return `[${tableName},mutate,${req.type},${typeSpecificKey}]`;
+};
+const generateGetKey = (tableName: string) => `[${tableName},get,byKey]`;
+const generateGetManyKey = (tableName: string, req: DBCoreGetManyRequest) =>
+  `[${tableName},getMany,byKeys${req.cache ? `,${req.cache}` : ''}]`;
+const generateOpenCursorKey = (tableName: string, req: DBCoreOpenCursorRequest) =>
+  `[${tableName},openCursor${req.reverse ? ',reverse' : ''},${generateQueryRequestKey(req.query)}]`;
+const generateQueryKey = (tableName: string, req: DBCoreQueryRequest) =>
+  `[${tableName},query,${generateQueryRequestKey(req.query)}]`;
+const generateCountKey = (tableName: string, req: DBCoreQueryRequest) =>
+  `[${tableName},count,${generateQueryRequestKey(req.query)}]`;
+
 export interface LoggerProps {
   tableWhiteList?: string[];
   tablesBlackList?: string[];
   operationsWhiteList?: Operation[];
   operationsBlackList?: Operation[];
 }
+
+const keyCounts = new Map<string, number[]>();
+
+const addToKeyCounts = (key: string, time: number) => {
+  if (!keyCounts.has(key)) keyCounts.set(key, [time]);
+  else keyCounts.get(key)!.push(time);
+};
+
+// setInterval(() => {
+//   console.log('Dexie | Key Counts');
+//   const sortedTimes = Array.from(keyCounts.entries())
+//     .map(([key, times]) => ({
+//       key,
+//       count: times.length,
+//       avg: times.reduce((a, b) => a + b, 0) / times.length
+//     }))
+//     .sort((a, b) => b.count * b.avg - a.count * a.avg);
+//   console.table(sortedTimes);
+//   console.log(sortedTimes.slice(0, 3));
+// }, 10000);
 
 const DEFAULT_PROPS: LoggerProps = {};
 
