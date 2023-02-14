@@ -70,6 +70,7 @@ const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
           return {
             ...downlevelTable,
             mutate: async (req: DBCoreMutateRequest) => {
+              const startTime = performance.now();
               if (shouldLog(tableName, "mutate")) {
                 console.groupCollapsed(
                   `Dexie | ${tableName} [ Mutate ] => Request`
@@ -79,10 +80,14 @@ const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
                 console.groupEnd();
               }
               return downlevelTable.mutate(req).then((res) => {
+                const timeElapsed = performance.now() - startTime;
                 if (shouldLog(tableName, "mutate")) {
                   console.groupCollapsed(
-                    `Dexie | ${tableName} [ Mutate ] <= Response`
+                    `Dexie | ${tableName} [ Mutate ] (${timeElapsed.toFixed(
+                      1
+                    )} ms) <= Response`
                   );
+                  console.log("-> Duration: " + timeElapsed + " ms");
                   console.log(JSON.stringify(res, undefined, 2));
                   console.groupEnd();
                 }
@@ -90,6 +95,7 @@ const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
               });
             },
             get: async (req: DBCoreGetRequest) => {
+              const startTime = performance.now();
               if (shouldLog(tableName, "get")) {
                 console.groupCollapsed(
                   `Dexie | ${tableName} [ Get ] => Request`
@@ -99,10 +105,14 @@ const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
                 console.groupEnd();
               }
               return downlevelTable.get(req).then((res) => {
+                const timeElapsed = performance.now() - startTime;
                 if (shouldLog(tableName, "get")) {
                   console.groupCollapsed(
-                    `Dexie | ${tableName} [ Get ] <= Response`
+                    `Dexie | ${tableName} [ Get ] (${timeElapsed.toFixed(
+                      1
+                    )} ms) <= Response`
                   );
+                  console.log("-> Duration: " + timeElapsed + " ms");
                   console.log(JSON.stringify(res, undefined, 2));
                   console.groupEnd();
                 }
@@ -111,6 +121,7 @@ const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
               });
             },
             getMany: async (req: DBCoreGetManyRequest) => {
+              const startTime = performance.now();
               if (shouldLog(tableName, "getMany")) {
                 console.groupCollapsed(
                   `Dexie | ${tableName} [ Get Many ] => Request`
@@ -120,10 +131,14 @@ const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
                 console.groupEnd();
               }
               return downlevelTable.getMany(req).then((res) => {
+                const timeElapsed = performance.now() - startTime;
                 if (shouldLog(tableName, "getMany")) {
                   console.groupCollapsed(
-                    `Dexie | ${tableName} [ Get Many ] <= Response`
+                    `Dexie | ${tableName} [ Get Many ] (${timeElapsed.toFixed(
+                      1
+                    )} ms) <= Response`
                   );
+                  console.log("-> Duration: " + timeElapsed + " ms");
                   console.log(JSON.stringify(res, undefined, 2));
                   console.groupEnd();
                 }
@@ -132,6 +147,7 @@ const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
               });
             },
             query: async (req: DBCoreQueryRequest) => {
+              const startTime = performance.now();
               if (shouldLog(tableName, "query")) {
                 console.groupCollapsed(
                   `Dexie | ${tableName}  [ Query ] => Request`
@@ -141,10 +157,14 @@ const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
                 console.groupEnd();
               }
               return downlevelTable.query(req).then((res) => {
+                const timeElapsed = performance.now() - startTime;
                 if (shouldLog(tableName, "query")) {
                   console.groupCollapsed(
-                    `Dexie | ${tableName}  [ Query ] <= Response`
+                    `Dexie | ${tableName}  [ Query ] (${timeElapsed.toFixed(
+                      1
+                    )} ms) <= Response`
                   );
+                  console.log("-> Duration: " + timeElapsed + " ms");
                   console.log(res);
                   console.groupEnd();
                 }
@@ -152,6 +172,7 @@ const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
               });
             },
             openCursor: async (req: DBCoreOpenCursorRequest) => {
+              const startTime = performance.now();
               if (shouldLog(tableName, "openCursor")) {
                 console.groupCollapsed(
                   `Dexie | ${tableName} [ Open Cursor ] => Request`
@@ -166,10 +187,14 @@ const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
                 console.groupEnd();
               }
               return downlevelTable.openCursor(req).then((res) => {
+                const timeElapsed = performance.now() - startTime;
                 if (shouldLog(tableName, "openCursor")) {
                   console.groupCollapsed(
-                    `Dexie | ${tableName} [ Open Cursor ] <= Response`
+                    `Dexie | ${tableName} [ Open Cursor ] (${timeElapsed.toFixed(
+                      1
+                    )} ms) <= Response`
                   );
+                  console.log("-> Duration: " + timeElapsed + " ms");
                   console.log(JSON.stringify(res, undefined, 2));
                   console.groupEnd();
                 }
@@ -177,6 +202,7 @@ const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
               });
             },
             count: async (req: DBCoreCountRequest) => {
+              const startTime = performance.now();
               if (shouldLog(tableName, "count")) {
                 console.groupCollapsed(
                   `Dexie | ${tableName} [ Count ] => Request`
@@ -186,10 +212,14 @@ const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
                 console.groupEnd();
               }
               return downlevelTable.count(req).then((res) => {
+                const timeElapsed = performance.now() - startTime;
                 if (shouldLog(tableName, "count")) {
                   console.groupCollapsed(
-                    `Dexie | ${tableName} [ Count ] <= Response`
+                    `Dexie | ${tableName} [ Count ] (${timeElapsed.toFixed(
+                      1
+                    )} ms) <= Response`
                   );
+                  console.log("-> Duration: " + timeElapsed + " ms");
                   console.log(res);
                   console.groupEnd();
                 }
