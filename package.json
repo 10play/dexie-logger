@@ -12,9 +12,6 @@
   "repository": "https://github.com/10play/dexie-logger.git",
   "author": "Noam Golani <noam.golani@gmail.com>",
   "license": "MIT",
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
-  },
   "devDependencies": {
     "@babel/core": "^7.20.12",
     "dexie": "^3.2.3",
