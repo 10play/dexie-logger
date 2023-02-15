@@ -4,6 +4,8 @@
 
 # 10Play - Dexie Logger
 
+![dexie logger logo](./assets/dexie-logger-in-the-middle.png)
+
 ## About the project
 
 This project created while working with dexie, from the need to better debugging tool
