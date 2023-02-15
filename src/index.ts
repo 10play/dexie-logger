@@ -12,6 +12,8 @@ import {
   Middleware,
 } from "dexie";
 
+import { useDevtools } from "./devtools/devtools";
+
 export type Operation = keyof DBCoreTable;
 
 const RANGE_TYPES = [, 'equal', 'range', 'any', 'never'];

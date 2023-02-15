@@ -13,6 +13,6 @@
     "outDir": "./lib",
     "sourceMap": true, // generate source map
   },
-  "exclude": ["node_modules", "./tsconfig.json"],
-  "include": ["src/**/*"]
+  "exclude": ["node_modules", "./tsconfig.json", "./demo/"],
+  "include": ["src/**/*", "custom.d.ts",]
 }

@@ -14,15 +14,15 @@
   "license": "MIT",
   "devDependencies": {
     "@babel/core": "^7.20.12",
+    "@rollup/plugin-babel": "^6.0.3",
+    "@rollup/plugin-commonjs": "^24.0.1",
+    "@rollup/plugin-node-resolve": "^15.0.1",
+    "@rollup/plugin-typescript": "^11.0.0",
     "dexie": "^3.2.3",
     "rollup": "^3.10.1",
     "rollup-plugin-terser": "^7.0.2",
     "tslib": "^2.4.1",
-    "typescript": "^4.9.4",
-    "@rollup/plugin-babel": "^6.0.3",
-    "@rollup/plugin-commonjs": "^24.0.1",
-    "@rollup/plugin-node-resolve": "^15.0.1",
-    "@rollup/plugin-typescript": "^11.0.0"
+    "typescript": "^4.9.4"
   },
   "keywords": [
     "Dexie",

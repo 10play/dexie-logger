@@ -1,6 +1,7 @@
 import React from 'react';
 import logo from './logo.svg';
 import './App.css';
+import { db } from './dexie';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         >
           Learn React
         </a>
+        <button onClick={() => db.users.add({ id: `user_${Date.now()}`, name: `user_${Date.now()}` })}>add user</button>
       </header>
     </div>
   );
