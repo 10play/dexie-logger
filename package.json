@@ -7,7 +7,8 @@
   "module": "lib/es/index.js",
   "typings": "lib/index",
   "scripts": {
-    "build": "rollup -c --bundleConfigAsCjs --extend"
+    "build": "rollup -c --bundleConfigAsCjs --extend",
+    "watch": "rollup -c --bundleConfigAsCjs --extend -w"
   },
   "repository": "https://github.com/10play/dexie-logger.git",
   "author": "Noam Golani <noam.golani@gmail.com>",

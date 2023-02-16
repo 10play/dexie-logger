@@ -19,7 +19,7 @@ export class CalendarDB extends Dexie {
     this.use(
       (loggerMiddleware as any)['dexie-logger']({
         tableWhiteList: ['users'],
-        operationsBlackList: ['openCursor']
+        operationsBlackList: ['openCursor'],
       })
     );
   }

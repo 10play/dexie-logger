@@ -108,6 +108,9 @@ const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
     operationsBlackList,
     operationsWhiteList,
   } = loggerProps || DEFAULT_PROPS;
+
+  useDevtools()
+
   if (tableWhiteList && tablesBlackList)
     throw Error(
       "You can't use both tableWhiteList and tablesBlackList at the same time"
