@@ -8,6 +8,7 @@ import {
   DBCoreOpenCursorRequest,
   DBCoreQuery,
   DBCoreQueryRequest,
+  DBCoreTransaction,
   Middleware,
 } from "dexie";
 
@@ -89,27 +90,25 @@ export interface LoggerProps {
   operationsBlackList?: Operation[];
 }
 
-const keyCounts = new Map<string, number[]>();
-
-const addToKeyCounts = (key: string, time: number) => {
-  if (!keyCounts.has(key)) keyCounts.set(key, [time]);
-  else keyCounts.get(key)!.push(time);
+const handleTransactions = (transaction: DBCoreTransaction, key: string) => {
+  const exists = transactions.has(transaction);
+  const startTime = performance.now();
+  if (!exists) {
+    transactions.set(transaction, [key]);
+    (transaction as IDBTransaction).addEventListener("complete", () => {
+      const timeElapsed = performance.now() - startTime;
+      console.log(
+        `Ended transaction (${timeElapsed.toFixed(1)})`,
+        transactions.get(transaction)
+      );
+      transactions.delete(transaction);
+    });
+  } else transactions.get(transaction)!.push(key);
 };
 
-// setInterval(() => {
-//   console.log('Dexie | Key Counts');
-//   const sortedTimes = Array.from(keyCounts.entries())
-//     .map(([key, times]) => ({
-//       key,
-//       count: times.length,
-//       avg: times.reduce((a, b) => a + b, 0) / times.length
-//     }))
-//     .sort((a, b) => b.count * b.avg - a.count * a.avg);
-//   console.table(sortedTimes);
-//   console.log(sortedTimes.slice(0, 3));
-// }, 10000);
-
 const DEFAULT_PROPS: LoggerProps = {};
+
+const transactions = new Map<DBCoreTransaction, string[]>();
 
 const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
   loggerProps
@@ -166,7 +165,11 @@ const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
             ...downlevelTable,
             mutate: async (req: DBCoreMutateRequest) => {
               const startTime = performance.now();
+              const key = generateMutateKey(tableName, req);
+              const transaction = req.trans;
+              handleTransactions(transaction, key);
 
+              // Log the request
               let responseLogger: ResponseLoggingCallback<"mutate"> | undefined;
               if (shouldLog(tableName, "mutate"))
                 responseLogger = callbacks["mutate"]?.(req, {
@@ -175,6 +178,8 @@ const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
 
               return downlevelTable.mutate(req).then((res) => {
                 const timeElapsed = performance.now() - startTime;
+
+                // Log the response
                 if (shouldLog(tableName, "mutate"))
                   responseLogger?.(res, {
                     timeElapsed,
@@ -184,13 +189,21 @@ const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
             },
             get: async (req: DBCoreGetRequest) => {
               const startTime = performance.now();
+              const key = generateGetKey(tableName);
+              const transaction = req.trans;
+              handleTransactions(transaction, key);
+
+              // Log the request
               let responseLogger: ResponseLoggingCallback<"get"> | undefined;
               if (shouldLog(tableName, "get"))
                 responseLogger = callbacks["get"]?.(req, {
                   tableName,
                 });
+
               return downlevelTable.get(req).then((res) => {
                 const timeElapsed = performance.now() - startTime;
+
+                // Log the response
                 if (shouldLog(tableName, "get"))
                   responseLogger?.(res, {
                     timeElapsed,
@@ -200,6 +213,11 @@ const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
             },
             getMany: async (req: DBCoreGetManyRequest) => {
               const startTime = performance.now();
+              const key = generateGetManyKey(tableName, req);
+              const transaction = req.trans;
+              handleTransactions(transaction, key);
+
+              // Log the request
               let responseLogger:
                 | ResponseLoggingCallback<"getMany">
                 | undefined;
@@ -207,8 +225,11 @@ const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
                 responseLogger = callbacks["getMany"]?.(req, {
                   tableName,
                 });
+
               return downlevelTable.getMany(req).then((res) => {
                 const timeElapsed = performance.now() - startTime;
+
+                // Log the response
                 if (shouldLog(tableName, "getMany"))
                   responseLogger?.(res, {
                     timeElapsed,
@@ -218,13 +239,21 @@ const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
             },
             query: async (req: DBCoreQueryRequest) => {
               const startTime = performance.now();
+              const key = generateQueryKey(tableName, req);
+              const transaction = req.trans;
+              handleTransactions(transaction, key);
+
+              // Log the request
               let responseLogger: ResponseLoggingCallback<"query"> | undefined;
               if (shouldLog(tableName, "query"))
                 responseLogger = callbacks["query"]?.(req, {
                   tableName,
                 });
+
               return downlevelTable.query(req).then((res) => {
                 const timeElapsed = performance.now() - startTime;
+
+                // Log the response
                 if (shouldLog(tableName, "query"))
                   responseLogger?.(res, {
                     timeElapsed,
@@ -234,6 +263,11 @@ const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
             },
             openCursor: async (req: DBCoreOpenCursorRequest) => {
               const startTime = performance.now();
+              const key = generateOpenCursorKey(tableName, req);
+              const transaction = req.trans;
+              handleTransactions(transaction, key);
+
+              // Log the request
               let responseLogger:
                 | ResponseLoggingCallback<"openCursor">
                 | undefined;
@@ -241,8 +275,11 @@ const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
                 responseLogger = callbacks["openCursor"]?.(req, {
                   tableName,
                 });
+
               return downlevelTable.openCursor(req).then((res) => {
                 const timeElapsed = performance.now() - startTime;
+
+                // Log the response
                 if (shouldLog(tableName, "openCursor"))
                   responseLogger?.(res, {
                     timeElapsed,
@@ -252,13 +289,21 @@ const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
             },
             count: async (req: DBCoreCountRequest) => {
               const startTime = performance.now();
+              const key = generateCountKey(tableName, req);
+              const transaction = req.trans;
+              handleTransactions(transaction, key);
+
+              // Log the request
               let responseLogger: ResponseLoggingCallback<"count"> | undefined;
               if (shouldLog(tableName, "count"))
                 responseLogger = callbacks["count"]?.(req, {
                   tableName,
                 });
+
               return downlevelTable.count(req).then((res) => {
                 const timeElapsed = performance.now() - startTime;
+
+                // Log the response
                 if (shouldLog(tableName, "count"))
                   responseLogger?.(res, {
                     timeElapsed,

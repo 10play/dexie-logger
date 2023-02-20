@@ -1,7 +1,6 @@
 import Dexie, { Table } from 'dexie';
 import loggerMiddleware from 'dexie-logger'
 
-
 export class CalendarDB extends Dexie {
   users!: Table<{ id: string; name: string }>;
 

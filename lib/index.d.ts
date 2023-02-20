@@ -1,5 +1,5 @@
-import { DBCore, DBCoreTable, Middleware } from "dexie";
-export type Operation = keyof DBCoreTable;
+import { DBCore, Middleware } from "dexie";
+import { Operation } from "./loggers";
 export interface LoggerProps {
     tableWhiteList?: string[];
     tablesBlackList?: string[];
