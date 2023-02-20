@@ -1,28 +1,32 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
-import { db } from './dexie';
+import React, { FC } from "react";
+import { db } from "./dexie";
+import styled from "styled-components";
 
-function App() {
+const OuterContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100vw;
+  color: white;
+`;
+
+const App: FC = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-        <button onClick={() => db.users.add({ id: `user_${Date.now()}`, name: `user_${Date.now()}` })}>add user</button>
-      </header>
-    </div>
+    <OuterContainer className="App">
+      <button
+        onClick={() =>
+          db.users.add({
+            id: `user_${Date.now()}`,
+            name: `user_${Date.now()}`,
+          })
+        }
+      >
+        add user
+      </button>
+    </OuterContainer>
   );
-}
+};
 
 export default App;
