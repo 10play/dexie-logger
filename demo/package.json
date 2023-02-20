@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@emotion/react": "^11.10.6",
+    "@emotion/styled": "^11.10.6",
+    "@mui/material": "^5.11.10",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^13.0.0",
     "@testing-library/user-event": "^13.2.1",
@@ -12,7 +15,7 @@
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "dexie": "^3.2.3",
-    "dexie-logger": "1.2.3",
+    "dexie-logger": "file:../",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
