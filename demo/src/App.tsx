@@ -40,6 +40,39 @@ const App: FC = () => {
           Get All Users
         </Button>
         <Button
+          onClick={() => {
+            db.transaction("rw", db.users, async () => {
+              await db.users.add({
+                id: `user_${Date.now()}`,
+                name: `user_${Date.now()}`,
+              });
+              await db.users.add({
+                id: `user_${Date.now()}`,
+                name: `user_${Date.now()}`,
+              });
+            });
+          }}
+          variant="contained"
+        >
+          Run Transaction #1
+        </Button>
+        <Button
+          onClick={() => {
+            db.transaction("rw", db.users, async () => {
+              const id = `user_${Date.now()}`;
+              await db.users.add({
+                id,
+                name: `user_${Date.now()}`,
+              });
+              await db.users.get(id);
+              await db.users.delete(id);
+            });
+          }}
+          variant="contained"
+        >
+          Run Transaction #2
+        </Button>
+        <Button
           onClick={() => db.users.clear()}
           variant="contained"
           color="warning"
