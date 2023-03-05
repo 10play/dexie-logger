@@ -20,40 +20,6 @@ const banner = `
 `;
 
 export default [
-  {
-    input: inputFileName,
-    output: [
-      {
-        name: moduleName,
-        file: pkg.browser,
-        format: "iife",
-        sourcemap: "inline",
-        banner,
-      },
-      {
-        name: moduleName,
-        file: pkg.browser.replace(".js", ".min.js"),
-        format: "iife",
-        sourcemap: "inline",
-        banner,
-        plugins: [terser()],
-      },
-    ],
-    plugins: [
-      pluginTypescript(),
-      pluginCommonjs({
-        extensions: [".js", ".ts"],
-      }),
-      babel({
-        babelHelpers: "bundled",
-        configFile: path.resolve(__dirname, ".babelrc.js"),
-      }),
-      pluginNodeResolve({
-        browser: true,
-      }),
-    ],
-  },
-
   // ES
   {
     input: inputFileName,
@@ -71,7 +37,6 @@ export default [
       ...Object.keys(pkg.devDependencies || {}),
     ],
     plugins: [
-
       pluginTypescript(),
       pluginCommonjs({
         extensions: [".js", ".ts"],
