@@ -12,7 +12,7 @@ import {
   Middleware,
 } from "dexie";
 
-import { useDevtools } from "./devtools/devtools";
+// import { useDevtools } from "./devtools/devtools";
 import {
   Operation,
   ResponseLoggingCallback,
@@ -140,7 +140,7 @@ const dexieLogger: (props?: Partial<LoggerProps>) => Middleware<DBCore> = (
     logType,
   } = { ...DEFAULT_PROPS, ...loggerProps };
 
-  useDevtools();
+  // useDevtools();
 
   if (tableWhiteList && tablesBlackList)
     throw Error(
