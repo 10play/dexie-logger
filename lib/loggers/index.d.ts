@@ -14,3 +14,4 @@ export type LoggingCallbacks = {
     [operation in Operation]?: (req: ReqForOperation<operation>, props: LoggingReqProps) => ResponseLoggingCallback<operation>;
 };
 export { defaultLoggingCallbacks } from "./default";
+export { minimalLoggingCallbacks } from "./minimal";
