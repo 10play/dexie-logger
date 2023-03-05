@@ -71,6 +71,7 @@ export default [
       ...Object.keys(pkg.devDependencies || {}),
     ],
     plugins: [
+
       pluginTypescript(),
       pluginCommonjs({
         extensions: [".js", ".ts"],

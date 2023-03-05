@@ -8,96 +8,128 @@ import {
   DBCoreOpenCursorRequest,
   DBCoreQuery,
   DBCoreQueryRequest,
-  DBCoreTable,
+  DBCoreTransaction,
   Middleware,
 } from "dexie";
 
-export type Operation = keyof DBCoreTable;
+// import { useDevtools } from "./devtools/devtools";
+import {
+  Operation,
+  ResponseLoggingCallback,
+  defaultLoggingCallbacks,
+  minimalLoggingCallbacks,
+} from "./loggers";
 
-const RANGE_TYPES = [, 'equal', 'range', 'any', 'never'];
+const RANGE_TYPES = [, "equal", "range", "any", "never"];
 
 const generateRangeKey = (range: DBCoreKeyRange) => {
   switch (RANGE_TYPES[range.type]) {
-    case 'equal':
+    case "equal":
       return `equal`;
-    case 'range':
-      return `${range.lowerOpen ? '(' : '['}${JSON.stringify(range.lower)}:${JSON.stringify(range.upper)}${
-        range.upperOpen ? ')' : ']'
-      }`;
-    case 'any':
+    case "range":
+      return `${range.lowerOpen ? "(" : "["}${JSON.stringify(
+        range.lower
+      )}:${JSON.stringify(range.upper)}${range.upperOpen ? ")" : "]"}`;
+    case "any":
       return `any`;
-    case 'never':
+    case "never":
     default:
-      return 'never';
+      return "never";
   }
 };
 
-const generateQueryRequestKey = (query: DBCoreQuery) => {
-  return `query:[${query.index ? query.index.name || 'primary' : 'primary'},range:${generateRangeKey(query.range)}]`;
+export const generateQueryRequestKey = (query: DBCoreQuery) => {
+  return `query:[${
+    query.index ? query.index.name || "primary" : "primary"
+  },range:${generateRangeKey(query.range)}]`;
 };
 
 const generateMutateKey = (tableName: string, req: DBCoreMutateRequest) => {
-  let typeSpecificKey = '';
+  let typeSpecificKey = "";
   switch (req.type) {
-    case 'add':
-      typeSpecificKey = '';
+    case "add":
+      typeSpecificKey = "";
       break;
-    case 'put':
-      if (req.changeSpec) typeSpecificKey = `fields:${Object.keys(req.changeSpec).join(',')}`;
+    case "put":
+      if (req.changeSpec)
+        typeSpecificKey = `fields:${Object.keys(req.changeSpec).join(",")}`;
       else if (req.changeSpecs)
-        typeSpecificKey = `fields:${req.changeSpecs.map((changeSpec) => Object.keys(changeSpec).join(',')).join(',')}`;
+        typeSpecificKey = `fields:${req.changeSpecs
+          .map((changeSpec) => Object.keys(changeSpec).join(","))
+          .join(",")}`;
       else if (req.criteria) typeSpecificKey = JSON.stringify(req.criteria);
-      else if (req.keys) typeSpecificKey = 'byKeys';
+      else if (req.keys) typeSpecificKey = "byKeys";
       break;
-    case 'delete':
-      typeSpecificKey = req.criteria ? JSON.stringify(req.criteria) : 'byKeys';
+    case "delete":
+      typeSpecificKey = req.criteria ? JSON.stringify(req.criteria) : "byKeys";
       break;
-    case 'deleteRange':
-      typeSpecificKey = req.range ? generateRangeKey(req.range) : 'all';
+    case "deleteRange":
+      typeSpecificKey = req.range ? generateRangeKey(req.range) : "all";
       break;
   }
   return `[${tableName},mutate,${req.type},${typeSpecificKey}]`;
 };
 const generateGetKey = (tableName: string) => `[${tableName},get,byKey]`;
 const generateGetManyKey = (tableName: string, req: DBCoreGetManyRequest) =>
-  `[${tableName},getMany,byKeys${req.cache ? `,${req.cache}` : ''}]`;
-const generateOpenCursorKey = (tableName: string, req: DBCoreOpenCursorRequest) =>
-  `[${tableName},openCursor${req.reverse ? ',reverse' : ''},${generateQueryRequestKey(req.query)}]`;
+  `[${tableName},getMany,byKeys${req.cache ? `,${req.cache}` : ""}]`;
+const generateOpenCursorKey = (
+  tableName: string,
+  req: DBCoreOpenCursorRequest
+) =>
+  `[${tableName},openCursor${
+    req.reverse ? ",reverse" : ""
+  },${generateQueryRequestKey(req.query)}]`;
 const generateQueryKey = (tableName: string, req: DBCoreQueryRequest) =>
   `[${tableName},query,${generateQueryRequestKey(req.query)}]`;
 const generateCountKey = (tableName: string, req: DBCoreQueryRequest) =>
   `[${tableName},count,${generateQueryRequestKey(req.query)}]`;
+
+export enum LogType {
+  Default = "DEFAULT",
+  Minimal = "MINIMAL",
+}
 
 export interface LoggerProps {
   tableWhiteList?: string[];
   tablesBlackList?: string[];
   operationsWhiteList?: Operation[];
   operationsBlackList?: Operation[];
+  logType: LogType;
 }
 
-const keyCounts = new Map<string, number[]>();
-
-const addToKeyCounts = (key: string, time: number) => {
-  if (!keyCounts.has(key)) keyCounts.set(key, [time]);
-  else keyCounts.get(key)!.push(time);
+const handleTransactions = (transaction: DBCoreTransaction, key: string) => {
+  const exists = transactions.has(transaction);
+  const startTime = performance.now();
+  if (!exists) {
+    transactions.set(transaction, [key]);
+    (transaction as IDBTransaction).addEventListener("complete", () => {
+      const timeElapsed = performance.now() - startTime;
+      console.log(
+        `Ended transaction (${timeElapsed.toFixed(1)})`,
+        transactions.get(transaction)
+      );
+      transactions.delete(transaction);
+    });
+  } else transactions.get(transaction)!.push(key);
 };
 
-// setInterval(() => {
-//   console.log('Dexie | Key Counts');
-//   const sortedTimes = Array.from(keyCounts.entries())
-//     .map(([key, times]) => ({
-//       key,
-//       count: times.length,
-//       avg: times.reduce((a, b) => a + b, 0) / times.length
-//     }))
-//     .sort((a, b) => b.count * b.avg - a.count * a.avg);
-//   console.table(sortedTimes);
-//   console.log(sortedTimes.slice(0, 3));
-// }, 10000);
+const DEFAULT_PROPS: LoggerProps = {
+  logType: LogType.Default,
+};
 
-const DEFAULT_PROPS: LoggerProps = {};
+const loggersCallbacksFromLogType = (logType: LogType) => {
+  switch (logType) {
+    case LogType.Minimal:
+      return minimalLoggingCallbacks;
+    case LogType.Default:
+    default:
+      return defaultLoggingCallbacks;
+  }
+};
 
-const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
+const transactions = new Map<DBCoreTransaction, string[]>();
+
+const dexieLogger: (props?: Partial<LoggerProps>) => Middleware<DBCore> = (
   loggerProps
 ) => {
   const {
@@ -105,7 +137,11 @@ const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
     tablesBlackList,
     operationsBlackList,
     operationsWhiteList,
-  } = loggerProps || DEFAULT_PROPS;
+    logType,
+  } = { ...DEFAULT_PROPS, ...loggerProps };
+
+  // useDevtools();
+
   if (tableWhiteList && tablesBlackList)
     throw Error(
       "You can't use both tableWhiteList and tablesBlackList at the same time"
@@ -135,6 +171,8 @@ const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
     return shouldLogOperation && shouldLogTable;
   };
 
+  const callbacks = loggersCallbacksFromLogType(logType);
+
   return {
     stack: "dbcore",
     name: "logger",
@@ -147,158 +185,149 @@ const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
             ...downlevelTable,
             mutate: async (req: DBCoreMutateRequest) => {
               const startTime = performance.now();
-              if (shouldLog(tableName, "mutate")) {
-                console.groupCollapsed(
-                  `Dexie | ${tableName} [ Mutate ] => Request`
-                );
-                console.log(req.type);
-                console.log(JSON.stringify(req, undefined, 2));
-                console.groupEnd();
-              }
+              // const key = generateMutateKey(tableName, req);
+              // const transaction = req.trans;
+              // handleTransactions(transaction, key);
+
+              // Log the request
+              let responseLogger: ResponseLoggingCallback<"mutate"> | undefined;
+              if (shouldLog(tableName, "mutate"))
+                responseLogger = callbacks["mutate"]?.(req, {
+                  tableName,
+                });
+
               return downlevelTable.mutate(req).then((res) => {
                 const timeElapsed = performance.now() - startTime;
-                if (shouldLog(tableName, "mutate")) {
-                  console.groupCollapsed(
-                    `Dexie | ${tableName} [ Mutate ] (${timeElapsed.toFixed(
-                      1
-                    )} ms) <= Response`
-                  );
-                  console.log("-> Duration: " + timeElapsed + " ms");
-                  console.log(JSON.stringify(res, undefined, 2));
-                  console.groupEnd();
-                }
+
+                // Log the response
+                if (shouldLog(tableName, "mutate"))
+                  responseLogger?.(res, {
+                    timeElapsed,
+                  });
                 return res;
               });
             },
             get: async (req: DBCoreGetRequest) => {
               const startTime = performance.now();
-              if (shouldLog(tableName, "get")) {
-                console.groupCollapsed(
-                  `Dexie | ${tableName} [ Get ] => Request`
-                );
-                console.log(req.key);
-                console.log(JSON.stringify(req, undefined, 2));
-                console.groupEnd();
-              }
+              // const key = generateGetKey(tableName);
+              // const transaction = req.trans;
+              // handleTransactions(transaction, key);
+
+              // Log the request
+              let responseLogger: ResponseLoggingCallback<"get"> | undefined;
+              if (shouldLog(tableName, "get"))
+                responseLogger = callbacks["get"]?.(req, {
+                  tableName,
+                });
+
               return downlevelTable.get(req).then((res) => {
                 const timeElapsed = performance.now() - startTime;
-                if (shouldLog(tableName, "get")) {
-                  console.groupCollapsed(
-                    `Dexie | ${tableName} [ Get ] (${timeElapsed.toFixed(
-                      1
-                    )} ms) <= Response`
-                  );
-                  console.log("-> Duration: " + timeElapsed + " ms");
-                  console.log(JSON.stringify(res, undefined, 2));
-                  console.groupEnd();
-                }
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+
+                // Log the response
+                if (shouldLog(tableName, "get"))
+                  responseLogger?.(res, {
+                    timeElapsed,
+                  });
                 return res;
               });
             },
             getMany: async (req: DBCoreGetManyRequest) => {
               const startTime = performance.now();
-              if (shouldLog(tableName, "getMany")) {
-                console.groupCollapsed(
-                  `Dexie | ${tableName} [ Get Many ] => Request`
-                );
-                console.log(req.keys);
-                console.log(JSON.stringify(req, undefined, 2));
-                console.groupEnd();
-              }
+              // const key = generateGetManyKey(tableName, req);
+              // const transaction = req.trans;
+              // handleTransactions(transaction, key);
+
+              // Log the request
+              let responseLogger:
+                | ResponseLoggingCallback<"getMany">
+                | undefined;
+              if (shouldLog(tableName, "getMany"))
+                responseLogger = callbacks["getMany"]?.(req, {
+                  tableName,
+                });
+
               return downlevelTable.getMany(req).then((res) => {
                 const timeElapsed = performance.now() - startTime;
-                if (shouldLog(tableName, "getMany")) {
-                  console.groupCollapsed(
-                    `Dexie | ${tableName} [ Get Many ] (${timeElapsed.toFixed(
-                      1
-                    )} ms) <= Response`
-                  );
-                  console.log("-> Duration: " + timeElapsed + " ms");
-                  console.log(JSON.stringify(res, undefined, 2));
-                  console.groupEnd();
-                }
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+
+                // Log the response
+                if (shouldLog(tableName, "getMany"))
+                  responseLogger?.(res, {
+                    timeElapsed,
+                  });
                 return res;
               });
             },
             query: async (req: DBCoreQueryRequest) => {
               const startTime = performance.now();
-              if (shouldLog(tableName, "query")) {
-                console.groupCollapsed(
-                  `Dexie | ${tableName}  [ Query ] => Request`
-                );
-                console.log(req.query);
-                console.log(req);
-                console.groupEnd();
-              }
+              // const key = generateQueryKey(tableName, req);
+              // const transaction = req.trans;
+              // handleTransactions(transaction, key);
+
+              // Log the request
+              let responseLogger: ResponseLoggingCallback<"query"> | undefined;
+              if (shouldLog(tableName, "query"))
+                responseLogger = callbacks["query"]?.(req, {
+                  tableName,
+                });
+
               return downlevelTable.query(req).then((res) => {
                 const timeElapsed = performance.now() - startTime;
-                if (shouldLog(tableName, "query")) {
-                  console.groupCollapsed(
-                    `Dexie | ${tableName}  [ Query ] (${timeElapsed.toFixed(
-                      1
-                    )} ms) <= Response`
-                  );
-                  console.log("-> Duration: " + timeElapsed + " ms");
-                  console.log(res);
-                  console.groupEnd();
-                }
+
+                // Log the response
+                if (shouldLog(tableName, "query"))
+                  responseLogger?.(res, {
+                    timeElapsed,
+                  });
                 return res;
               });
             },
             openCursor: async (req: DBCoreOpenCursorRequest) => {
               const startTime = performance.now();
-              if (shouldLog(tableName, "openCursor")) {
-                console.groupCollapsed(
-                  `Dexie | ${tableName} [ Open Cursor ] => Request`
-                );
-                console.log(
-                  `Dexie | Open Cursor | ${JSON.stringify(
-                    req.query,
-                    undefined,
-                    2
-                  )}, ${tableName} - `
-                );
-                console.groupEnd();
-              }
+              // const key = generateOpenCursorKey(tableName, req);
+              // const transaction = req.trans;
+              // handleTransactions(transaction, key);
+
+              // Log the request
+              let responseLogger:
+                | ResponseLoggingCallback<"openCursor">
+                | undefined;
+              if (shouldLog(tableName, "openCursor"))
+                responseLogger = callbacks["openCursor"]?.(req, {
+                  tableName,
+                });
+
               return downlevelTable.openCursor(req).then((res) => {
                 const timeElapsed = performance.now() - startTime;
-                if (shouldLog(tableName, "openCursor")) {
-                  console.groupCollapsed(
-                    `Dexie | ${tableName} [ Open Cursor ] (${timeElapsed.toFixed(
-                      1
-                    )} ms) <= Response`
-                  );
-                  console.log("-> Duration: " + timeElapsed + " ms");
-                  console.log(JSON.stringify(res, undefined, 2));
-                  console.groupEnd();
-                }
+
+                // Log the response
+                if (shouldLog(tableName, "openCursor"))
+                  responseLogger?.(res, {
+                    timeElapsed,
+                  });
                 return res;
               });
             },
             count: async (req: DBCoreCountRequest) => {
               const startTime = performance.now();
-              if (shouldLog(tableName, "count")) {
-                console.groupCollapsed(
-                  `Dexie | ${tableName} [ Count ] => Request`
-                );
-                console.log(req.query);
-                console.log(req);
-                console.groupEnd();
-              }
+              // const key = generateCountKey(tableName, req);
+              // const transaction = req.trans;
+              // handleTransactions(transaction, key);
+
+              // Log the request
+              let responseLogger: ResponseLoggingCallback<"count"> | undefined;
+              if (shouldLog(tableName, "count"))
+                responseLogger = callbacks["count"]?.(req, {
+                  tableName,
+                });
+
               return downlevelTable.count(req).then((res) => {
                 const timeElapsed = performance.now() - startTime;
-                if (shouldLog(tableName, "count")) {
-                  console.groupCollapsed(
-                    `Dexie | ${tableName} [ Count ] (${timeElapsed.toFixed(
-                      1
-                    )} ms) <= Response`
-                  );
-                  console.log("-> Duration: " + timeElapsed + " ms");
-                  console.log(res);
-                  console.groupEnd();
-                }
+
+                // Log the response
+                if (shouldLog(tableName, "count"))
+                  responseLogger?.(res, {
+                    timeElapsed,
+                  });
                 return res;
               });
             },
