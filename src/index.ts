@@ -17,6 +17,7 @@ import {
   Operation,
   ResponseLoggingCallback,
   defaultLoggingCallbacks,
+  minimalLoggingCallbacks,
 } from "./loggers";
 
 const RANGE_TYPES = [, "equal", "range", "any", "never"];
@@ -37,7 +38,7 @@ const generateRangeKey = (range: DBCoreKeyRange) => {
   }
 };
 
-const generateQueryRequestKey = (query: DBCoreQuery) => {
+export const generateQueryRequestKey = (query: DBCoreQuery) => {
   return `query:[${
     query.index ? query.index.name || "primary" : "primary"
   },range:${generateRangeKey(query.range)}]`;
@@ -83,11 +84,17 @@ const generateQueryKey = (tableName: string, req: DBCoreQueryRequest) =>
 const generateCountKey = (tableName: string, req: DBCoreQueryRequest) =>
   `[${tableName},count,${generateQueryRequestKey(req.query)}]`;
 
+export enum LogType {
+  Default = "DEFAULT",
+  Minimal = "MINIMAL",
+}
+
 export interface LoggerProps {
   tableWhiteList?: string[];
   tablesBlackList?: string[];
   operationsWhiteList?: Operation[];
   operationsBlackList?: Operation[];
+  logType: LogType;
 }
 
 const handleTransactions = (transaction: DBCoreTransaction, key: string) => {
@@ -106,11 +113,23 @@ const handleTransactions = (transaction: DBCoreTransaction, key: string) => {
   } else transactions.get(transaction)!.push(key);
 };
 
-const DEFAULT_PROPS: LoggerProps = {};
+const DEFAULT_PROPS: LoggerProps = {
+  logType: LogType.Default,
+};
+
+const loggersCallbacksFromLogType = (logType: LogType) => {
+  switch (logType) {
+    case LogType.Minimal:
+      return minimalLoggingCallbacks;
+    case LogType.Default:
+    default:
+      return defaultLoggingCallbacks;
+  }
+};
 
 const transactions = new Map<DBCoreTransaction, string[]>();
 
-const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
+const dexieLogger: (props?: Partial<LoggerProps>) => Middleware<DBCore> = (
   loggerProps
 ) => {
   const {
@@ -118,7 +137,8 @@ const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
     tablesBlackList,
     operationsBlackList,
     operationsWhiteList,
-  } = loggerProps || DEFAULT_PROPS;
+    logType,
+  } = { ...DEFAULT_PROPS, ...loggerProps };
 
   useDevtools();
 
@@ -151,7 +171,7 @@ const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
     return shouldLogOperation && shouldLogTable;
   };
 
-  const callbacks = defaultLoggingCallbacks;
+  const callbacks = loggersCallbacksFromLogType(logType);
 
   return {
     stack: "dbcore",
@@ -165,9 +185,9 @@ const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
             ...downlevelTable,
             mutate: async (req: DBCoreMutateRequest) => {
               const startTime = performance.now();
-              const key = generateMutateKey(tableName, req);
-              const transaction = req.trans;
-              handleTransactions(transaction, key);
+              // const key = generateMutateKey(tableName, req);
+              // const transaction = req.trans;
+              // handleTransactions(transaction, key);
 
               // Log the request
               let responseLogger: ResponseLoggingCallback<"mutate"> | undefined;
@@ -189,9 +209,9 @@ const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
             },
             get: async (req: DBCoreGetRequest) => {
               const startTime = performance.now();
-              const key = generateGetKey(tableName);
-              const transaction = req.trans;
-              handleTransactions(transaction, key);
+              // const key = generateGetKey(tableName);
+              // const transaction = req.trans;
+              // handleTransactions(transaction, key);
 
               // Log the request
               let responseLogger: ResponseLoggingCallback<"get"> | undefined;
@@ -213,9 +233,9 @@ const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
             },
             getMany: async (req: DBCoreGetManyRequest) => {
               const startTime = performance.now();
-              const key = generateGetManyKey(tableName, req);
-              const transaction = req.trans;
-              handleTransactions(transaction, key);
+              // const key = generateGetManyKey(tableName, req);
+              // const transaction = req.trans;
+              // handleTransactions(transaction, key);
 
               // Log the request
               let responseLogger:
@@ -239,9 +259,9 @@ const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
             },
             query: async (req: DBCoreQueryRequest) => {
               const startTime = performance.now();
-              const key = generateQueryKey(tableName, req);
-              const transaction = req.trans;
-              handleTransactions(transaction, key);
+              // const key = generateQueryKey(tableName, req);
+              // const transaction = req.trans;
+              // handleTransactions(transaction, key);
 
               // Log the request
               let responseLogger: ResponseLoggingCallback<"query"> | undefined;
@@ -263,9 +283,9 @@ const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
             },
             openCursor: async (req: DBCoreOpenCursorRequest) => {
               const startTime = performance.now();
-              const key = generateOpenCursorKey(tableName, req);
-              const transaction = req.trans;
-              handleTransactions(transaction, key);
+              // const key = generateOpenCursorKey(tableName, req);
+              // const transaction = req.trans;
+              // handleTransactions(transaction, key);
 
               // Log the request
               let responseLogger:
@@ -289,9 +309,9 @@ const dexieLogger: (props?: LoggerProps) => Middleware<DBCore> = (
             },
             count: async (req: DBCoreCountRequest) => {
               const startTime = performance.now();
-              const key = generateCountKey(tableName, req);
-              const transaction = req.trans;
-              handleTransactions(transaction, key);
+              // const key = generateCountKey(tableName, req);
+              // const transaction = req.trans;
+              // handleTransactions(transaction, key);
 
               // Log the request
               let responseLogger: ResponseLoggingCallback<"count"> | undefined;

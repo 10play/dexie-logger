@@ -32,3 +32,4 @@ export type LoggingCallbacks = {
 };
 
 export { defaultLoggingCallbacks } from "./default";
+export { minimalLoggingCallbacks } from "./minimal";
