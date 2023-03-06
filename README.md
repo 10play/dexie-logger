@@ -76,6 +76,27 @@ Don't forget to give the project a star! Thanks again!
 
 You can test and validate your changes with the [Demo](./demo/README.md)
 
+### Ideas + next steps
+
+- [ ] Add dev tool ui cmopoent 
+    - [ ] Show log history
+    - [ ] modify logs from ui
+- [ ] pass custom loggerCallbacks in the dexie-logger props:
+    ```
+        dexieLogger({
+            customCallbacks: {
+                get: ...
+            }
+        })
+    ```
+- [ ] Add logs for transactions
+    - [ ] enable and disable from props
+    - [ ] create shortcut key for transaction (for redability)
+    - [ ] log the transaction time, included operations, and eache oparation time
+- [ ] "score" oparations by time, and add color to the logs (Green = realy fast, Red = realy slow)
+- [ ] improve readme 
+- [ ] Tests
+
 ## License
 
 Distributed under the MIT License. See `LICENSE.txt` for more information.
