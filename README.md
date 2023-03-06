@@ -95,6 +95,7 @@ You can test and validate your changes with the [Demo](./demo/README.md)
     - [ ] log the transaction time, included operations, and eache oparation time
 - [ ] "score" oparations by time, and add color to the logs (Green = realy fast, Red = realy slow)
 - [ ] improve readme 
+- [ ] Tests
 
 ## License
 
