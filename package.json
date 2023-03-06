@@ -1,6 +1,6 @@
 {
   "name": "dexie-logger",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "description": "Dexie logger middleware",
   "main": "lib/cjs/index.js",
   "module": "lib/es/index.js",
@@ -10,6 +10,7 @@
     "watch": "rollup -c --bundleConfigAsCjs --extend -w"
   },
   "repository": "https://github.com/10play/dexie-logger.git",
+  "homepage": "https://10play.github.io/dexie-logger/",
   "author": "Noam Golani <noam.golani@gmail.com>",
   "license": "MIT",
   "devDependencies": {
