@@ -46,6 +46,8 @@ when creating the logger you can git it some params
 
 - either `operationsWhiteList` or `operationsBlackList`, same as for tables but receives dexie operations names: `mutate, get, getMany, query, openCursor, count`
 
+- `logType` that can be either `Minimal` or `Default` to control the logs
+
 ### Advanced example
 
 ```typescript
@@ -57,6 +59,7 @@ db.use(
   logger({
     tableWhiteList: ["events", "users"],
     operationsWhiteList: ["mutate", "query"],
+    logType: LogType.Minimal
   })
 );
 ```
